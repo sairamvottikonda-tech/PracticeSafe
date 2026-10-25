@@ -94,6 +94,6 @@ It is one file with no build step. Open `index.html` in a browser, or use the li
 
 ## Team
 
-[Name 1], [Name 2], [Name 3] - Arcadia High School - Congressional App Challenge 2026
+Sairam Vottikonda, Ronit Rao, Siona Rao - Arcadia High School - Congressional App Challenge 2026
 
 Air quality data: Open-Meteo (CC BY 4.0) and waqi.info. Map data: &copy; OpenStreetMap contributors.
