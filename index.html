@@ -194,28 +194,24 @@
 
   <div class="stats-row">
     <div class="stat-card"><div class="n" id="dose">&mdash;</div><div class="k">&micro;g PM2.5 inhaled</div></div>
-    <div class="stat-card"><div class="n" id="equiv">&mdash;</div><div class="k">&times; a rest day indoors</div></div>
+    <div class="stat-card"><div class="n" id="equiv">&mdash;</div><div class="k">&times; resting breathing, same air</div></div>
   </div>
 
   <div class="alt-section" id="altSection" style="display:none">
-    <p class="section-title">Better times today</p>
+    <p class="section-title">Better times in the next 24 hours</p>
     <div id="altList"></div>
   </div>
 
   <div class="ground-section" id="groundSection" style="display:none"></div>
 
   <footer>
-    <strong>Default view:</strong> Arcadia High School, where this app was built and tested.
-    Tap "Use my location" above to check anywhere else &mdash; the EPA's Good/Moderate/Unhealthy
-    categories are a nationwide standard, but the CIF-specific guidance quoted in the verdict
-    text is California-specific and may not apply outside CA.<br><br>
-    <strong>Before you demo this:</strong> thresholds are derived from public CIF guidance, not
-    yet confirmed against Arcadia Unified's own policy. Validated against the May 19&ndash;20,
-    2026 LA County smoke advisory naming Arcadia; at these coordinates the model never crossed
-    101 AQI that day, a real gap between modeled and true local conditions during fast-moving
-    smoke, not a bug.<br><br>
-    Air quality data by Open&ndash;Meteo (CC BY 4.0). Ground station data by
-    <a href="https://waqi.info" style="color:inherit">waqi.info</a>.
+    <strong>Decision support, not medical advice.</strong> Always follow your district's policy and your athletic trainer.
+    Air quality here is a forecast model and can miss fast-moving smoke; the ground-sensor line is a live cross-check.
+    Verdicts use EPA AQI categories, with CIF guidance for AQI above 150. The dose check compares each session
+    with a standard 2-hour moderate practice. Sport breathing rates are general estimates.<br><br>
+    The default view is Arcadia High School. &ldquo;Use my location&rdquo; works anywhere, but the CIF wording applies to California.<br><br>
+    Data: Open&ndash;Meteo (CC BY 4.0), <a href="https://waqi.info" style="color:inherit">waqi.info</a>,
+    and &copy; OpenStreetMap contributors.
   </footer>
 
 </div>
@@ -257,21 +253,24 @@ const BANDS = [
 ];
 const band = aqi => BANDS.find(b => aqi <= b.max);
 
-const REFERENCE_PM = 35; // EPA 24-hr PM2.5 standard, µg/m³
+// A "standard practice" is moderate effort (0.045 m³/min) for 120 minutes.
+// Each session's inhaled dose is converted into the PM2.5 concentration at which
+// that standard practice would deliver the same dose, then compared with the top
+// of the EPA "Moderate" range (35.4 µg/m³ = AQI 100). Longer or harder sessions
+// therefore trip the flag at lower air-quality readings than a standard practice.
+const STANDARD_AIR_VOLUME = 0.045 * 120;  // m³ of air breathed in a standard practice
+const MODERATE_PM_LIMIT = 35.4;           // µg/m³, top of the EPA "Moderate" range
+const DOSE_FLAG_MIN_AQI = 50;             // at or below this, EPA says little or no risk
 
-function applyDoseOverride(b, e, minutes, vent){
-  const referenceDose = REFERENCE_PM * vent * minutes;
-  const ratio = e.dose / referenceDose;
-  if(b.call === 'CANCEL') return { ...b, doseRatio: ratio };
-  if(ratio >= 2.5){
-    return { color:'var(--stop)', call:'MOVE INDOORS', doseRatio: ratio,
-      note:`Peak AQI looked fine, but total inhaled dose is ${ratio.toFixed(1)}\u00D7 the EPA 24-hr PM2.5 reference for a session this long. Exposure adds up even when no single hour spikes.` };
+function applyDoseOverride(b, e){
+  const equivPm = e.dose / STANDARD_AIR_VOLUME;
+  const out = { ...b, equivPm, doseFlag: false };
+  if(b.call === 'PRACTICE' && e.peakAqi > DOSE_FLAG_MIN_AQI && equivPm > MODERATE_PM_LIMIT + 0.05){
+    const m = BANDS.find(x => x.call === 'MODIFY');
+    return { ...out, color: m.color, call: 'MODIFY', doseFlag: true,
+      note: `Air quality alone looks acceptable, but this session is long and/or hard enough that athletes would inhale as much PM2.5 as a standard 2-hour moderate practice in air at ${equivPm.toFixed(0)} \u00B5g/m\u00B3 \u2014 above the 35 \u00B5g/m\u00B3 limit for the EPA "Moderate" range. Shorten it, add rest breaks, or lower the intensity.` };
   }
-  if(ratio >= 1.5 && b.call === 'PRACTICE'){
-    return { ...b, call:'MODIFY', doseRatio: ratio,
-      note:`${b.note} Cumulative dose is ${ratio.toFixed(1)}\u00D7 the EPA 24-hr reference for a session this long \u2014 shorten it or add breaks.` };
-  }
-  return { ...b, doseRatio: ratio };
+  return out;
 }
 
 function milesBetween(lat1, lon1, lat2, lon2){
@@ -408,16 +407,19 @@ function findAlternatives(start, minutes, vent, baselineDose){
   return picked;
 }
 
-function buildWhy(b, e, minutes, vent){
+function buildWhy(b, e){
   const items = [];
   const peakLabel = e.peakAqi <= 100 ? 'within' : 'above';
   items.push(`<strong>Peak air quality:</strong> AQI ${e.peakAqi} during the window, ${peakLabel} the 100 threshold for unrestricted practice.`);
-  const refDose = REFERENCE_PM * vent * minutes;
-  items.push(`<strong>Cumulative dose:</strong> ${e.dose.toFixed(0)} \u00B5g PM2.5 inhaled &mdash; ${b.doseRatio.toFixed(2)}\u00D7 the ${refDose.toFixed(0)} \u00B5g EPA 24-hr reference for a session this length.`);
+  items.push(`<strong>Dose for this session:</strong> athletes would inhale about ${e.dose.toFixed(0)} \u00B5g of PM2.5, the same as a standard 2-hour moderate practice in air at ${b.equivPm.toFixed(0)} \u00B5g/m\u00B3 ${b.doseFlag ? '&mdash; above' : '&mdash; within'} the 35 \u00B5g/m\u00B3 limit for the EPA "Moderate" range.`);
   if(GROUND){
-    const diff = Math.abs(GROUND.aqi - e.peakAqi);
-    const agree = diff <= 15 ? 'agrees closely with' : 'differs from';
-    items.push(`<strong>Ground sensor:</strong> ${GROUND.name} (${GROUND.miles.toFixed(1)} mi) reads AQI ${GROUND.aqi}, which ${agree} the forecast model.`);
+    const nowS = sampleAt(new Date());
+    if(nowS){
+      const diff = Math.abs(GROUND.aqi - nowS.aqi);
+      const agree = diff <= 15 ? 'agrees closely with' : 'differs from';
+      const tail = diff <= 15 ? '' : ' When they disagree, trust the higher reading.';
+      items.push(`<strong>Ground sensor:</strong> ${GROUND.name} (${GROUND.miles.toFixed(1)} mi) reads AQI ${GROUND.aqi} now, which ${agree} the model's current estimate of ${Math.round(nowS.aqi)}.${tail}`);
+    }
   }
   return items;
 }
@@ -436,7 +438,7 @@ function render(){
   const e = exposure(start, minutes, vent);
   if(!e){ fail('That window is past the end of the forecast. Try an earlier time.'); return; }
 
-  const b = applyDoseOverride(band(e.peakAqi), e, minutes, vent);
+  const b = applyDoseOverride(band(e.peakAqi), e);
 
   document.getElementById('hero').style.setProperty('--tier', b.color);
   document.getElementById('riskLabel').textContent = b.call === 'PRACTICE' ? 'LOW RISK' : b.call === 'MODIFY' ? 'MODERATE RISK' : 'HIGH RISK';
@@ -447,7 +449,7 @@ function render(){
   document.getElementById('badge').innerHTML = iconFor(b.call);
 
   document.getElementById('whyBox').style.display = 'block';
-  document.getElementById('whyList').innerHTML = buildWhy(b, e, minutes, vent)
+  document.getElementById('whyList').innerHTML = buildWhy(b, e)
     .map((t,i) => `<li><span class="num">${i+1}</span><span>${t}</span></li>`).join('');
 
   document.getElementById('dose').textContent  = e.dose.toFixed(0);
