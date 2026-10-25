@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Practice Call (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0F14;
+    --panel:#131A21;
+    --panel-2:#1B242D;
+    --border: rgba(255,255,255,0.08);
+    --text:#F2F5F7;
+    --text-dim:#8B96A3;
+    --text-faint:#5C6873;
+    --good:#34C77B;
+    --moderate:#E3B341;
+    --caution:#F0883E;
+    --stop:#F0575A;
+    --severe:#B15CDE;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:'Barlow',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:480px;margin:0 auto;padding:18px 16px 60px;}
+
+  .topbar{margin-bottom:14px;}
+  .topbar #locLabel{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--text-faint);
+  }
+  .topbar-row2{display:flex;justify-content:space-between;align-items:center;margin-top:4px;}
+  .link-btn{
+    background:none;border:none;padding:0;color:var(--text-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.05em;
+    text-decoration:underline;cursor:pointer;
+  }
+  .link-btn:hover{color:var(--text);}
+  #stamp{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);}
+
+  .demo-banner{
+    background:color-mix(in srgb, var(--moderate) 16%, transparent);
+    border:1px solid color-mix(in srgb, var(--moderate) 55%, transparent);
+    color:var(--moderate);border-radius:12px;padding:10px 14px;margin-bottom:14px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;line-height:1.5;
+  }
+  .scenario-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .scenario-row label{
+    font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--text-faint);
+  }
+  .scenario-row select{
+    flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);
+    border-radius:10px;padding:7px 10px;font-family:'Barlow',sans-serif;font-weight:600;font-size:14px;
+  }
+
+  .section-title{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--text-dim);margin:0 0 10px;
+  }
+
+  .hero{
+    background:var(--panel);border:1px solid var(--border);border-radius:18px;
+    padding:22px 20px;margin-bottom:14px;position:relative;overflow:hidden;
+  }
+  .hero::before{content:'';position:absolute;inset:0 0 auto 0;height:3px;background:var(--tier,var(--good));}
+  .hero-top{display:flex;align-items:center;gap:12px;margin-bottom:6px;}
+  .badge{
+    width:34px;height:34px;border-radius:50%;flex:none;
+    background:color-mix(in srgb, var(--tier,var(--good)) 18%, transparent);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .badge svg{width:18px;height:18px;stroke:var(--tier,var(--good));}
+  .hero-label{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--tier,var(--good));
+  }
+  .hero h1{
+    font-family:'Barlow Condensed',sans-serif;font-weight:800;
+    font-size:clamp(38px,11vw,52px);line-height:.95;letter-spacing:-.01em;
+    text-transform:uppercase;margin:2px 0 10px;color:var(--tier,var(--good));
+  }
+  .hero-reason{margin:0;font-size:15px;line-height:1.5;color:var(--text-dim);max-width:44ch;}
+
+  .why{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
+  .why ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+  .why li{display:flex;gap:10px;font-size:14px;line-height:1.5;color:var(--text-dim);}
+  .why .num{
+    flex:none;width:20px;height:20px;border-radius:50%;background:var(--panel-2);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text);margin-top:1px;
+  }
+  .why strong{color:var(--text);font-weight:600;}
+
+  .controls{margin-bottom:14px;}
+  .control-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .control-grid .full{grid-column:1/-1;}
+  .field{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;}
+  .field label{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;
+  }
+  .field input,.field select{
+    width:100%;border:0;background:transparent;color:var(--text);
+    font-family:'Barlow',sans-serif;font-weight:600;font-size:15px;padding:0;
+  }
+  .field select{appearance:none;-webkit-appearance:none;}
+  .field input:focus,.field select:focus{outline:2px solid var(--text-dim);outline-offset:3px;border-radius:4px;}
+
+  .chart-section{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px 18px 14px;margin-bottom:14px;}
+  #chart{width:100%;height:150px;display:block;}
+  .chart-ticks{
+    display:flex;justify-content:space-between;margin-top:6px;
+    font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);
+  }
+  .legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+  .legend span{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);display:flex;align-items:center;gap:5px;}
+  .legend i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+  .stats-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 16px;}
+  .stat-card .n{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:30px;line-height:1;}
+  .stat-card .k{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-top:5px;}
+
+  .alt-section{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px 20px;margin-bottom:14px;}
+  .alt-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--border);}
+  .alt-row:first-of-type{border-top:none;padding-top:0;}
+  .alt-time{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;}
+  .alt-detail{font-size:12px;color:var(--text-faint);margin-top:2px;}
+  .alt-save{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--good);
+    background:color-mix(in srgb, var(--good) 15%, transparent);padding:4px 9px;border-radius:20px;white-space:nowrap;
+  }
+
+  .ground-section{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:16px 20px;margin-bottom:14px;font-size:13px;line-height:1.5;color:var(--text-dim);}
+  .ground-section strong{color:var(--text);}
+
+  footer{font-size:12.5px;line-height:1.6;color:var(--text-faint);border-top:1px solid var(--border);padding-top:14px;margin-top:6px;}
+  footer strong{color:var(--text-dim);}
+  .status{color:var(--text-dim);}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div id="locLabel">Arcadia HS &middot; 34.1298, &minus;118.0367</div>
+    <div class="topbar-row2">
+      <button id="locBtn" class="link-btn" type="button">Use my location</button>
+      <span id="stamp">loading</span>
+    </div>
+    <div class="scenario-row">
+      <label for="scenario">Data</label>
+      <select id="scenario">
+        <option value="live">Live forecast</option>
+        <optgroup label="Simulated (for demos)">
+          <option value="clean">Clean day</option>
+          <option value="steady">Steady moderate air (dose check)</option>
+          <option value="rolling">Smoke rolling in</option>
+          <option value="heavy">Heavy smoke</option>
+          <option value="danger">Dangerous smoke</option>
+        </optgroup>
+      </select>
+    </div>
+  </div>
+
+  <div class="demo-banner" id="demoBanner" style="display:none"></div>
+
+  <div class="hero" id="hero">
+    <div class="hero-top">
+      <div class="badge" id="badge"></div>
+      <div class="hero-label" id="riskLabel">&mdash;</div>
+    </div>
+    <h1 id="call">&mdash;</h1>
+    <p id="reason" class="hero-reason status">Pulling the hourly forecast&hellip;</p>
+  </div>
+
+  <div class="why" id="whyBox" style="display:none">
+    <p class="section-title">Why this call</p>
+    <ul id="whyList"></ul>
+  </div>
+
+  <div class="controls">
+    <p class="section-title">Practice window</p>
+    <div class="control-grid">
+      <div class="field"><label for="start">Starts</label><input type="time" id="start" value="15:30"></div>
+      <div class="field">
+        <label for="mins">Length</label>
+        <select id="mins">
+          <option value="60">60 min</option><option value="90">90 min</option>
+          <option value="120" selected>120 min</option><option value="150">150 min</option><option value="180">180 min</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label for="effort">Sport / effort</label>
+        <select id="effort">
+          <option value="0.025">Walkthrough / stretching</option>
+          <option value="0.035">Baseball / softball</option>
+          <option value="0.045" selected>Soccer / field sports</option>
+          <option value="0.055">Football (bursts + standing)</option>
+          <option value="0.08">Cross country / distance</option>
+          <option value="0.10">Sprint conditioning</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <p class="section-title">Exposure across the window</p>
+    <svg id="chart" viewBox="0 0 640 150" preserveAspectRatio="none"></svg>
+    <div class="chart-ticks" id="chartTicks"></div>
+    <div class="legend">
+      <span><i style="background:var(--good)"></i>Good</span>
+      <span><i style="background:var(--moderate)"></i>Moderate</span>
+      <span><i style="background:var(--caution)"></i>Sensitive groups</span>
+      <span><i style="background:var(--stop)"></i>Unhealthy</span>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="n" id="dose">&mdash;</div><div class="k">&micro;g PM2.5 inhaled</div></div>
+    <div class="stat-card"><div class="n" id="equiv">&mdash;</div><div class="k">&times; resting breathing, same air</div></div>
+  </div>
+
+  <div class="alt-section" id="altSection" style="display:none">
+    <p class="section-title">Better times in the next 24 hours</p>
+    <div id="altList"></div>
+  </div>
+
+  <div class="ground-section" id="groundSection" style="display:none"></div>
+
+  <footer>
+    <strong>Decision support, not medical advice.</strong> Always follow your district's policy and your athletic trainer.
+    Air quality here is a forecast model and can miss fast-moving smoke; the ground-sensor line is a live cross-check.
+    Verdicts use EPA AQI categories, with CIF guidance for AQI above 150. The dose check compares each session
+    with a standard 2-hour moderate practice. Sport breathing rates are general estimates. The simulated scenarios in the Data menu are made up for demonstration and are not real readings.<br><br>
+    The default view is Arcadia High School. &ldquo;Use my location&rdquo; works anywhere, but the CIF wording applies to California.<br><br>
+    Data: Open&ndash;Meteo (CC BY 4.0), <a href="https://waqi.info" style="color:inherit">waqi.info</a>,
+    and &copy; OpenStreetMap contributors.
+  </footer>
+
+</div>
+
+<script>
+let LAT = 34.1298, LON = -118.0367;
+let LOCATION_LABEL = 'Arcadia HS';
+let LOCATION_TZ = 'America/Los_Angeles';
+let LOCATION_OFFSET = '-07:00'; // overwritten from the API's own utc_offset_seconds on load
+
+const REST_VENT = 0.006;          // m³/min at rest
+const STEP = 5;                   // integration step, minutes
+const WAQI_TOKEN = '2609ddbaf34b066cccc80ae97e2c7c0b5a0cf954';
+
+function offsetSecondsToString(sec){
+  const h = Math.trunc(sec/3600);
+  const m = Math.abs(sec % 3600) / 60;
+  return `${sec < 0 ? '-' : '+'}${String(Math.abs(h)).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function locationDateString(date){
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: LOCATION_TZ, year:'numeric', month:'2-digit', day:'2-digit'
+  }).format(date);
+}
+
+const BANDS = [
+  { max: 50,  color:'var(--good)',     call:'PRACTICE',
+    note:'Good air. Normal practice.' },
+  { max: 100, color:'var(--moderate)', call:'PRACTICE',
+    note:'Moderate. Unusually sensitive athletes may notice symptoms.' },
+  { max: 150, color:'var(--caution)',  call:'MODIFY',
+    note:'Unhealthy for sensitive groups. Add breaks, cut sustained conditioning, keep inhalers on the sideline.' },
+  { max: 200, color:'var(--stop)',     call:'MOVE INDOORS',
+    note:'CIF: seriously consider rescheduling or moving indoors. Avoid heavy exertion.' },
+  { max: 300, color:'var(--severe)',   call:'CANCEL',
+    note:'Very unhealthy. No outdoor activity.' },
+  { max: 999, color:'var(--severe)',   call:'CANCEL',
+    note:'Hazardous. No outdoor activity.' }
+];
+const band = aqi => BANDS.find(b => aqi <= b.max);
+
+// A "standard practice" is moderate effort (0.045 m³/min) for 120 minutes.
+// Each session's inhaled dose is converted into the PM2.5 concentration at which
+// that standard practice would deliver the same dose, then compared with the top
+// of the EPA "Moderate" range (35.4 µg/m³ = AQI 100). Longer or harder sessions
+// therefore trip the flag at lower air-quality readings than a standard practice.
+const STANDARD_AIR_VOLUME = 0.045 * 120;  // m³ of air breathed in a standard practice
+const MODERATE_PM_LIMIT = 35.4;           // µg/m³, top of the EPA "Moderate" range
+const DOSE_FLAG_MIN_AQI = 50;             // at or below this, EPA says little or no risk
+
+function applyDoseOverride(b, e){
+  const equivPm = e.dose / STANDARD_AIR_VOLUME;
+  const out = { ...b, equivPm, doseFlag: false };
+  if(b.call === 'PRACTICE' && e.peakAqi > DOSE_FLAG_MIN_AQI && equivPm > MODERATE_PM_LIMIT + 0.05){
+    const m = BANDS.find(x => x.call === 'MODIFY');
+    return { ...out, color: m.color, call: 'MODIFY', doseFlag: true,
+      note: `Air quality alone looks acceptable, but this session is long and/or hard enough that athletes would inhale as much PM2.5 as a standard 2-hour moderate practice in air at ${equivPm.toFixed(0)} \u00B5g/m\u00B3 \u2014 above the 35 \u00B5g/m\u00B3 limit for the EPA "Moderate" range. Shorten it, add rest breaks, or lower the intensity.` };
+  }
+  return out;
+}
+
+function milesBetween(lat1, lon1, lat2, lon2){
+  const R = 3958.8;
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+let HOURS = null;
+let GROUND = null;
+let DEMO = null;
+
+// Simulated scenarios. Each returns PM2.5 (µg/m³) for an hour of the day, and the
+// same smoke repeats every day so the demo looks the same whenever it is recorded.
+const SCENARIOS = {
+  clean:   { label: 'Clean day',                          pm: (h, i) => 5 + 2*Math.sin(i/3) },
+  steady:  { label: 'Steady moderate air',                pm: (h, i) => 25 + 2*Math.sin(i/5) },
+  rolling: { label: 'Smoke rolling in',                   pm: h => 9 + 45*Math.exp(-((h-19)**2)/32) },
+  heavy:   { label: 'Heavy smoke',                        pm: h => 20 + 110*Math.exp(-((h-16)**2)/32) },
+  danger:  { label: 'Dangerous smoke',                    pm: h => 30 + 170*Math.exp(-((h-16)**2)/32) }
+};
+
+// US EPA PM2.5 breakpoints -> AQI (same scale the live data uses)
+function pmToAqi(pm){
+  const bp = [[0,12,0,50],[12.1,35.4,51,100],[35.5,55.4,101,150],[55.5,150.4,151,200],[150.5,250.4,201,300],[250.5,500.4,301,500]];
+  for(const [lo,hi,alo,ahi] of bp){
+    if(pm <= hi) return Math.round(alo + (ahi-alo) * Math.max(0, pm-lo) / (hi-lo));
+  }
+  return 500;
+}
+
+function tzOffsetString(tz, date){
+  const v = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'shortOffset' })
+    .formatToParts(date).find(p => p.type === 'timeZoneName').value;
+  const m = v.match(/GMT([+-])(\d+)(?::(\d+))?/);
+  if(!m) return '+00:00';
+  return `${m[1]}${m[2].padStart(2,'0')}:${(m[3]||'00').padStart(2,'0')}`;
+}
+
+function startDemo(key){
+  const sc = SCENARIOS[key];
+  if(!sc) return;
+  DEMO = key; GROUND = null;
+  LAT = 34.1298; LON = -118.0367;
+  LOCATION_TZ = 'America/Los_Angeles';
+  const days = [new Date(), new Date(Date.now() + 86400000)].map(d => locationDateString(d));
+  LOCATION_OFFSET = tzOffsetString(LOCATION_TZ, new Date());
+  HOURS = [];
+  days.forEach(day => {
+    const off = tzOffsetString(LOCATION_TZ, new Date(`${day}T20:00:00Z`));
+    for(let h = 0; h < 24; h++){
+      const pm = Math.max(0, sc.pm(h, HOURS.length));
+      HOURS.push({ t: new Date(`${day}T${String(h).padStart(2,'0')}:00:00${off}`), pm, aqi: pmToAqi(pm) });
+    }
+  });
+  document.getElementById('groundSection').style.display = 'none';
+  const ban = document.getElementById('demoBanner');
+  ban.style.display = 'block';
+  ban.textContent = `SIMULATED DATA: "${sc.label}" is a made-up scenario for demonstration, not a real air quality reading.`;
+  LOCATION_LABEL = `Simulated: ${sc.label}`;
+  refreshLocationLabel();
+  document.getElementById('stamp').textContent = 'simulated';
+  document.getElementById('scenario').value = key;
+  render();
+}
+
+function endDemo(){
+  const u = new URL(location.href);
+  u.searchParams.delete('demo');
+  location.href = u.toString();
+}
+
+function refreshLocationLabel(){
+  document.getElementById('locLabel').textContent =
+    `${LOCATION_LABEL} \u00B7 ${LAT.toFixed(4)}, ${LON.toFixed(4)}`;
+}
+
+async function load(){
+  const url = 'https://air-quality-api.open-meteo.com/v1/air-quality'
+    + `?latitude=${LAT}&longitude=${LON}`
+    + '&hourly=pm2_5,us_aqi&timezone=auto&forecast_days=2';
+  const r = await fetch(url);
+  if(!r.ok) throw new Error('status ' + r.status);
+  const j = await r.json();
+  if(DEMO) return;
+  LOCATION_TZ = j.timezone;
+  LOCATION_OFFSET = offsetSecondsToString(j.utc_offset_seconds);
+  HOURS = j.hourly.time.map((t,i) => ({
+    t: new Date(t + LOCATION_OFFSET), pm: j.hourly.pm2_5[i], aqi: j.hourly.us_aqi[i]
+  })).filter(h => h.pm !== null);
+  document.getElementById('stamp').textContent =
+    'updated ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  render();
+}
+
+async function loadGroundStation(){
+  const el = document.getElementById('groundSection');
+  try{
+    const r = await fetch(`https://api.waqi.info/feed/geo:${LAT};${LON}/?token=${WAQI_TOKEN}`);
+    const j = await r.json();
+    if(DEMO) return;
+    if(j.status !== 'ok') throw new Error('no station nearby');
+    const [slat, slon] = j.data.city.geo;
+    GROUND = { name: j.data.city.name, miles: milesBetween(LAT, LON, slat, slon), aqi: j.data.aqi, time: j.data.time.s.slice(11,16) };
+    el.style.display = 'block';
+    el.innerHTML = `<strong>Ground sensor check:</strong> ${GROUND.name} (${GROUND.miles.toFixed(1)} mi away)
+      reads AQI ${GROUND.aqi} as of ${GROUND.time}. Live cross-check against a physical sensor, not part of the forecast above.`;
+    if(LOCATION_LABEL === 'Your location'){
+      LOCATION_LABEL = `Near ${GROUND.name.split(',')[0]}`;
+      refreshLocationLabel();
+    }
+    render();
+  }catch(e){
+    el.style.display = 'none';
+  }
+}
+
+async function reverseGeocode(lat, lon){
+  try{
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`);
+    if(!r.ok) return null;
+    const j = await r.json();
+    const a = j.address || {};
+    // Prefer the most specific thing OSM knows at this point: a named
+    // building/amenity (sometimes literally the school), then neighborhood,
+    // then city. Falls back to null if nothing usable comes back.
+    return j.name || a.amenity || a.building || a.neighbourhood || a.suburb
+      || a.city || a.town || a.village || a.county || null;
+  }catch(e){
+    return null;
+  }
+}
+
+async function useMyLocation(){
+  const btn = document.getElementById('locBtn');
+  if(!navigator.geolocation){
+    btn.textContent = 'Not supported on this browser';
+    return;
+  }
+  btn.textContent = 'Locating\u2026';
+  navigator.geolocation.getCurrentPosition(async pos => {
+    DEMO = null; document.getElementById('demoBanner').style.display = 'none'; document.getElementById('scenario').value = 'live';
+    LAT = pos.coords.latitude; LON = pos.coords.longitude;
+    LOCATION_LABEL = 'Your location';
+    refreshLocationLabel();
+    btn.textContent = 'Using your location';
+    HOURS = null; GROUND = null;
+    document.getElementById('groundSection').style.display = 'none';
+
+    const place = await reverseGeocode(LAT, LON);
+    if(place){ LOCATION_LABEL = place; refreshLocationLabel(); }
+
+    await load().catch(() => fail('Could not reach the air quality service. Check your connection and reload.'));
+    loadGroundStation();
+  }, () => {
+    btn.textContent = "Couldn't get your location \u2014 showing Arcadia HS";
+  }, { timeout: 8000 });
+}
+
+function sampleAt(when){
+  const ms = when.getTime();
+  for(let i=0;i<HOURS.length-1;i++){
+    const a = HOURS[i], b = HOURS[i+1];
+    if(ms >= a.t.getTime() && ms <= b.t.getTime()){
+      const f = (ms - a.t.getTime()) / (b.t.getTime() - a.t.getTime());
+      return { pm: a.pm + (b.pm-a.pm)*f, aqi: a.aqi + (b.aqi-a.aqi)*f };
+    }
+  }
+  return null;
+}
+
+function exposure(start, minutes, vent){
+  let dose = 0, peak = 0, pmSum = 0, n = 0;
+  for(let m = 0; m < minutes; m += STEP){
+    const s = sampleAt(new Date(start.getTime() + m*60000));
+    if(!s) return null;
+    dose += s.pm * vent * STEP; pmSum += s.pm; peak = Math.max(peak, s.aqi); n++;
+  }
+  const meanPm = pmSum / n;
+  return { dose, peakAqi: Math.round(peak), meanPm, equiv: dose / (meanPm * REST_VENT * minutes) };
+}
+
+function localMinutes(d){
+  const p = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', hour12: false, timeZone: LOCATION_TZ }).formatToParts(d);
+  return (+p.find(x => x.type === 'hour').value % 24) * 60 + +p.find(x => x.type === 'minute').value;
+}
+
+const CALL_RANK = { 'PRACTICE': 0, 'MODIFY': 1, 'MOVE INDOORS': 2, 'CANCEL': 3 };
+const CALL_LABEL = { 'PRACTICE': 'Practice OK', 'MODIFY': 'Modify', 'MOVE INDOORS': 'Move indoors', 'CANCEL': 'Cancel' };
+
+// Only suggest a time that is genuinely better: a milder call than the current one, or,
+// when the current call is Practice in moderate air (AQI above 50), a time with at least
+// 15% less inhaled PM2.5. When the air is already good there is nothing to suggest.
+function findAlternatives(start, minutes, vent, baselineDose, baseCall, basePeak){
+  const candidates = [];
+  for(let off = 30; off <= 24*60; off += 30){
+    const t = new Date(start.getTime() + off*60000);
+    const lm = localMinutes(t);
+    if(lm < 6*60 || lm + minutes > 21.5*60) continue; // only realistic practice hours: start 6 AM or later, end by 9:30 PM
+    const e = exposure(t, minutes, vent);
+    if(!e) continue;
+    const call = applyDoseOverride(band(e.peakAqi), e).call;
+    const milder = CALL_RANK[call] < CALL_RANK[baseCall] && e.dose < baselineDose;
+    const lessExposure = CALL_RANK[baseCall] === 0 && basePeak > 50 && CALL_RANK[call] === 0 && e.dose < baselineDose * 0.85;
+    if(milder || lessExposure) candidates.push({ t, e, call });
+  }
+  candidates.sort((a,b) => a.e.dose - b.e.dose);
+  const picked = [];
+  for(const c of candidates){
+    if(picked.every(p => Math.abs(p.t - c.t) >= 90*60000)) picked.push(c);
+    if(picked.length === 3) break;
+  }
+  return picked;
+}
+
+function buildWhy(b, e){
+  const items = [];
+  const peakLabel = e.peakAqi <= 100 ? 'within' : 'above';
+  items.push(`<strong>Peak air quality:</strong> AQI ${e.peakAqi} during the window, ${peakLabel} the 100 threshold for unrestricted practice.`);
+  items.push(`<strong>Dose for this session:</strong> athletes would inhale about ${e.dose.toFixed(0)} \u00B5g of PM2.5, the same as a standard 2-hour moderate practice in air at ${b.equivPm.toFixed(0)} \u00B5g/m\u00B3 ${b.doseFlag ? '&mdash; above' : '&mdash; within'} the 35 \u00B5g/m\u00B3 limit for the EPA "Moderate" range.`);
+  if(GROUND){
+    const nowS = sampleAt(new Date());
+    if(nowS){
+      const diff = Math.abs(GROUND.aqi - nowS.aqi);
+      const agree = diff <= 15 ? 'agrees closely with' : 'differs from';
+      const tail = diff <= 15 ? '' : ' When they disagree, trust the higher reading.';
+      items.push(`<strong>Ground sensor:</strong> ${GROUND.name} (${GROUND.miles.toFixed(1)} mi) reads AQI ${GROUND.aqi} now, which ${agree} the model's current estimate of ${Math.round(nowS.aqi)}.${tail}`);
+    }
+  }
+  return items;
+}
+
+function render(){
+  if(!HOURS) return;
+  const minutes = +document.getElementById('mins').value;
+  const vent    = +document.getElementById('effort').value;
+  const timeVal = document.getElementById('start').value;
+
+  let start = new Date(`${locationDateString(new Date())}T${timeVal}:00${LOCATION_OFFSET}`);
+  if(start < new Date()){
+    start = new Date(`${locationDateString(new Date(Date.now()+86400000))}T${timeVal}:00${LOCATION_OFFSET}`);
+  }
+
+  const e = exposure(start, minutes, vent);
+  if(!e){ fail('That window is past the end of the forecast. Try an earlier time.'); return; }
+
+  const b = applyDoseOverride(band(e.peakAqi), e);
+
+  document.getElementById('hero').style.setProperty('--tier', b.color);
+  document.getElementById('riskLabel').textContent = b.call === 'PRACTICE' ? 'LOW RISK' : b.call === 'MODIFY' ? 'MODERATE RISK' : 'HIGH RISK';
+  document.getElementById('call').textContent = b.call === 'PRACTICE' ? 'PRACTICE OK' : b.call;
+  document.getElementById('reason').className = '';
+  document.getElementById('reason').textContent =
+    `${b.note} Peak AQI ${e.peakAqi} during a ${minutes}-minute session starting ${fmt(start)}.`;
+  document.getElementById('badge').innerHTML = iconFor(b.call);
+
+  document.getElementById('whyBox').style.display = 'block';
+  document.getElementById('whyList').innerHTML = buildWhy(b, e)
+    .map((t,i) => `<li><span class="num">${i+1}</span><span>${t}</span></li>`).join('');
+
+  document.getElementById('dose').textContent  = e.dose.toFixed(0);
+  document.getElementById('equiv').textContent = e.equiv.toFixed(1) + '\u00D7';
+
+  drawChart(start, minutes);
+
+  const alts = findAlternatives(start, minutes, vent, e.dose, b.call, e.peakAqi);
+  const altSection = document.getElementById('altSection');
+  if(alts.length){
+    altSection.style.display = 'block';
+    document.getElementById('altList').innerHTML = alts.map(a => {
+      const pct = Math.round((1 - a.e.dose/e.dose) * 100);
+      return `<div class="alt-row">
+        <div><div class="alt-time">${fmt(a.t)}</div><div class="alt-detail">${CALL_LABEL[a.call]} &middot; peak AQI ${a.e.peakAqi} &middot; ${a.e.dose.toFixed(0)} \u00B5g</div></div>
+        <div class="alt-save">${pct}% lower</div>
+      </div>`;
+    }).join('');
+  } else {
+    altSection.style.display = 'none';
+  }
+}
+
+function drawChart(start, minutes){
+  const svg = document.getElementById('chart');
+  const W = 640, H = 150, PAD = 8, yMax = 150;
+  const points = [];
+  for(let m = 0; m <= minutes; m += 15){
+    const s = sampleAt(new Date(start.getTime() + m*60000));
+    if(s) points.push({ m, aqi: s.aqi });
+  }
+  if(points.length < 2){ svg.innerHTML = ''; return; }
+
+  const x = m => PAD + (m/minutes) * (W - PAD*2);
+  const y = aqi => H - PAD - (Math.min(aqi,yMax)/yMax) * (H - PAD*2);
+
+  let segs = '';
+  for(let i=0;i<points.length-1;i++){
+    const a = points[i], b = points[i+1], avg = (a.aqi + b.aqi)/2;
+    segs += `<line x1="${x(a.m)}" y1="${y(a.aqi)}" x2="${x(b.m)}" y2="${y(b.aqi)}" stroke="${band(avg).color}" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  const areaPath = 'M ' + points.map(p => `${x(p.m)},${y(p.aqi)}`).join(' L ')
+    + ` L ${x(points[points.length-1].m)},${H-PAD} L ${x(points[0].m)},${H-PAD} Z`;
+  const grid50 = y(50), grid100 = y(100);
+
+  let nowLine = '';
+  const nowMin = (Date.now() - start.getTime()) / 60000;
+  if(nowMin > 0 && nowMin < minutes){
+    nowLine = `<line x1="${x(nowMin)}" y1="${PAD}" x2="${x(nowMin)}" y2="${H-PAD}" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="${x(nowMin)+4}" y="${PAD+10}" fill="var(--text-faint)" font-size="9" font-family="IBM Plex Mono, monospace">NOW</text>`;
+  }
+
+  svg.innerHTML = `
+    <line x1="${PAD}" y1="${grid50}" x2="${W-PAD}" y2="${grid50}" stroke="var(--border)" stroke-width="1"/>
+    <line x1="${PAD}" y1="${grid100}" x2="${W-PAD}" y2="${grid100}" stroke="var(--border)" stroke-width="1"/>
+    <path d="${areaPath}" fill="var(--panel-2)" opacity="0.6"/>
+    ${segs}${nowLine}
+  `;
+
+  const tickCount = 4;
+  let ticksHtml = '';
+  for(let i=0;i<tickCount;i++){
+    const idx = Math.round((i/(tickCount-1)) * (points.length-1));
+    const t = new Date(start.getTime() + points[idx].m*60000);
+    ticksHtml += `<span>${fmt(t)}</span>`;
+  }
+  document.getElementById('chartTicks').innerHTML = ticksHtml;
+}
+
+function iconFor(call){
+  if(call === 'PRACTICE') return '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>';
+  if(call === 'MODIFY') return '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></svg>';
+  if(call === 'MOVE INDOORS') return '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="7" y1="7" x2="17" y2="17"/></svg>';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="8" y1="8" x2="16" y2="16"/><line x1="16" y1="8" x2="8" y2="16"/></svg>';
+}
+
+const fmt = d => d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:LOCATION_TZ});
+
+function fail(msg){
+  document.getElementById('call').textContent = 'NO CALL';
+  document.getElementById('reason').textContent = msg;
+  document.getElementById('whyBox').style.display = 'none';
+  document.getElementById('altSection').style.display = 'none';
+}
+
+['start','mins','effort'].forEach(id => document.getElementById(id).addEventListener('input', render));
+document.getElementById('locBtn').addEventListener('click', useMyLocation);
+
+refreshLocationLabel();
+load().catch(() => { if(!DEMO) fail('Could not reach the air quality service. Check your connection and reload.'); });
+loadGroundStation();
+
+document.getElementById('scenario').addEventListener('change', e => {
+  if(e.target.value === 'live') endDemo(); else startDemo(e.target.value);
+});
+const demoParam = new URLSearchParams(location.search).get('demo');
+if(demoParam && SCENARIOS[demoParam]) startDemo(demoParam);
+</script>
+</body>
+</html>
