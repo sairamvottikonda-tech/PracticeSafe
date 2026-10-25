@@ -9,9 +9,9 @@ integrates concentration against ventilation rate across the exact practice
 window, and returns a verdict plus a cleaner time slot if one exists in
 the next 24 hours.
 
-**Live:** [link once Pages is up]
+**Live:** https://sairamvottikonda-tech.github.io/practice-call/
 **Built for:** Arcadia High School athletics
-**Thresholds:** [CIF Southern Section]
+**Thresholds:** CIF Southern Section
 
 ## How it works
 - Air quality data: Open-Meteo Air Quality API (CC BY 4.0), no key required
