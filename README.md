@@ -1,8 +1,8 @@
 # PracticeSafe
 
-**Live app:** https://sairamvottikonda-tech.github.io/practice-call/
+**Live app:** https://sairamvottikonda-tech.github.io/PracticeSafe/
 
-**Demo:** https://sairamvottikonda-tech.github.io/practice-call/demo.html
+**Demo:** https://sairamvottikonda-tech.github.io/PracticeSafe/demo.html
 
 A coach picks a start time, a length, and a sport. PracticeSafe looks at the forecast air quality for that exact window and answers one question: practice, modify, move indoors, or cancel?
 
