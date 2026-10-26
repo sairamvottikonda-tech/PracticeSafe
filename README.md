@@ -1,12 +1,12 @@
-# Practice Call
+# PracticeSafe
 
 **Live app:** https://sairamvottikonda-tech.github.io/practice-call/
 
 **Demo:** https://sairamvottikonda-tech.github.io/practice-call/demo.html
 
-A coach picks a start time, a length, and a sport. Practice Call looks at the forecast air quality for that exact window and answers one question: practice, modify, move indoors, or cancel?
+A coach picks a start time, a length, and a sport. PracticeSafe looks at the forecast air quality for that exact window and answers one question: practice, modify, move indoors, or cancel?
 
-Most air quality tools show one number for right now. But a coach is deciding about a two-hour block that starts later, for athletes who breathe many times harder than someone standing still. Practice Call works on the whole window and also suggests a cleaner time if one exists.
+Most air quality tools show one number for right now. But a coach is deciding about a two-hour block that starts later, for athletes who breathe many times harder than someone standing still. PracticeSafe works on the whole window and also suggests a cleaner time if one exists.
 
 Built for Arcadia High School athletics. It also works anywhere via **Use my location**.
 
